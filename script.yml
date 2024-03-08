@@ -1,0 +1,48 @@
+config:
+  target: 'http://localhost:10106'
+  processor: "./logging.js"
+  phases:
+    - duration: 20
+      arrivalRate: 40
+      name: "Warming up"
+    - duration: 20
+      arrivalRate: 40
+      rampTo: 1000
+      name: "Ramping up"
+    - duration: 20
+      arrivalRate: 1000
+      name: "Sustained load"
+scenarios:
+  - name: "Get room list and details"
+    flow:
+      # First request: Get list and capture the first room group context ID
+      - get:
+          url: "/api/v1/roomsGroup/list"
+          capture:
+            json: "$[0].dynamicId"
+            as: "roomGroupContextId"
+
+      # Second request: Use the captured roomGroupContextId to get category list and capture the first category ID
+      - get:
+          url: "/api/v1/roomsGroup/{{ roomGroupContextId }}/category_list"
+          capture:
+            json: "$[0].dynamicId"
+            as: "categoryId"
+
+      # Third request: Use both roomGroupContextId and categoryId to get group list and capture the first group ID
+      - get:
+          url: "/api/v1/roomsGroup/{{ roomGroupContextId }}/category/{{ categoryId }}/group_list"
+          #afterResponse: "printStatus"
+          capture:
+            json: "$[0].dynamicId"
+            as: "groupId"
+
+      # Fourth request: Finally, use roomGroupContextId, categoryId, and groupId to get the room list
+      - get:
+          url: "/api/v1/roomsGroup/{{ roomGroupContextId }}/category/{{ categoryId }}/group/{{ groupId }}/roomList"
+          capture:
+            json: "$[0].dynamicId"
+            as: "roomId"
+      - get:
+          url: "/api/v1/room/{{ roomId }}/read_static_details"
+          

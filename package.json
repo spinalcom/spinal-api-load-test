@@ -1,0 +1,19 @@
+{
+  "name": "spinal-api-load-test",
+  "version": "1.0.0",
+  "description": "Stress test spinalcom APIs",
+  "main": "index.js",
+  "scripts": {
+    "stress-test": "artillery run script.yml -o ./output/$npm_config_name.json",
+    "generate-report": "mkdir -p html-report && for file in output/*.json; do artillery report \"$file\" -o \"html-report/$(basename \"$file\" .json).html\"; done"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spinalcom"
+  },
+  "author": "Rayane Serir",
+  "license": "ISC",
+  "dependencies": {
+    "artillery": "^2.0.7"
+  }
+}
